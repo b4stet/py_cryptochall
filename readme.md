@@ -10,6 +10,7 @@ Modularity added to allow reuse in other challenges:
 
 To run:
 ```
+$ pip3 install -r requirements.txt
 $ python3 main_set1.py
 $ python3 main_set2.py
 ```
