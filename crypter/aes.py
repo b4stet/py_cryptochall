@@ -32,15 +32,16 @@ def decrypt(cipher: bytes, key: bytes, chaining_mode: str, iv=None, unpad=True):
 
     plain = crypter.decrypt(cipher)
     if unpad is True:
-        plain = padding.unpad_pkcs7(plain)
+        try:
+            plain = padding.unpad_pkcs7(plain)
+        except Exception:
+            raise
     return plain
 
 
 def encrypt_cbc_homemade(plain: bytes, key: bytes, iv: bytes):
     plain_padded = padding.pad_pkcs7(plain, 16)
     blocks_plain = [plain_padded[i:i+16] for i in range(0, len(plain_padded), 16)]
-    # if len(blocks_plain[-1]) < 16:
-    #     blocks_plain[-1] = padding.pad_pkcs7(blocks_plain[-1], 16)
 
     cipher = b''
     prev = iv
@@ -64,5 +65,8 @@ def decrypt_cbc_homemade(cipher: bytes, key: bytes, iv: bytes):
         plain += unxored
         prev = block_cipher
 
-    plain = padding.unpad_pkcs7(plain)
+    try:
+        plain = padding.unpad_pkcs7(plain)
+    except Exception:
+        raise
     return plain

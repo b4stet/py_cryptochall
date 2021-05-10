@@ -60,8 +60,8 @@ for attempt in result['step3']['attempts']:
     print('     |  received 0x{}'.format(attempt['received']))
     print('     |  => chained with {}'.format(attempt['guessed']))
 
-# Chall 12
-print(' | Chall 12 (implement Chosen Plaintext Attack (CPA) to retrieve secret from encryption with ECB chaining mode)')
+# Chall 12 & 14
+print(' | Chall 12 and 14 (implement Chosen Plaintext Attack (CPA) to retrieve secret from encryption with ECB chaining mode)')
 key_byte_size = 16
 oracle = OracleServer('127.0.0.1', 8080, 'aes_ecb_secret', key_byte_size)
 server = oracle.get_server()
@@ -131,3 +131,20 @@ print('       | keeping:               0x{}'.format(result['step3']['admin_encry
 print('     | forged encrypted profile 0x{} decrypts to "{}"'.format(
     result['step3']['forged']['encrypted'], result['step3']['forged']['profile']
 ))
+
+# Chall 15
+print(' | Chall 14 (validate pkcs7 padding) ...', end='')
+padding_ok = b'ICE ICE BABY\x04\x04\x04\x04'
+padding_ko2 = b'ICE ICE BABY\x01\x02\x03\x04'
+padding_ko1 = b'ICE ICE BABY\x05\x05\x05\x05'
+padding_tests = [padding_ok, padding_ko1, padding_ko2]
+padding_expectations = [True, False, False]
+for test, expected in zip(padding_tests, padding_expectations):
+    try:
+        padding.unpad_pkcs7(test)
+    except ValueError:
+        if expected is False:
+            pass
+        else:
+            raise
+print(' ok')

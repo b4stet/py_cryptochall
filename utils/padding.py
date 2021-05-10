@@ -11,4 +11,9 @@ def pad_pkcs7(data: bytes, block_byte_length: int):
 
 def unpad_pkcs7(data: bytes):
     nb_padded = data[-1]
+
+    # validate that data ends with nb_padded times the byte 'nb_padded'
+    for i in range(0, nb_padded):
+        if data[-1 - i] != nb_padded:
+            raise ValueError('Invalid padding')
     return data[:-nb_padded]
