@@ -6,9 +6,15 @@ from utils import encoder, padding
 # oracle accept plaintext hex encoded, in a 'data' parameter
 # oracle return cipher hex encoded
 
-def get_response(url, data: bytes):
+def get_response(url, data: bytes, verb='GET'):
     data_hex = encoder.bytes_to_hex(data)
-    response = requests.get(url, params={'data': data_hex})
+
+    response = None
+    if verb == 'GET':
+        response = requests.get(url, params={'data': data_hex})
+
+    if verb == 'POST':
+        response = requests.post(url, data={'data': data_hex})
     response.encoding = 'utf-8'
     return encoder.hex_to_bytes(response.text)
 

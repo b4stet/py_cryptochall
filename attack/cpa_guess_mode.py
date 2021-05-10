@@ -56,8 +56,6 @@ def guess_ecb_cbc(nb_repeating_blocks, nb_runs, url):
             attempt['guessed'] = 'cbc'
 
         result['step3']['attempts'].append(attempt)
-        print('*', end='', flush=True)
 
-    print('')
     result['total_oracle_calls'] += result['step3']['nb_oracle_calls']
     return result

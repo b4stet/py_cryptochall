@@ -102,19 +102,32 @@ for byte_offset, attempt in enumerate(result['step4']['bruteforce']):
     print('       |  chosen plaintext {}'.format(encoder.hex_to_bytes(attempt['sent'])))
 
 # Chall 13
-# print(' | Chall 13 (implement Chosen Plaintext Attack (CPA) to forge a valid encrypted admin profile, where encryption uses ECB chaining mode')
-# oracle = OracleServer('127.0.0.1', 8080, 'aes_ecb_profile', 16)
-# server = oracle.get_server()
-# thread = threading.Thread(target=server.serve_forever)
-# thread.daemon = True
-# thread.start()
-# print('   | oracle running at http://127.0.0.1:8080')
-# result = cpa_forge_admin_profile.abuse_ecb('http://127.0.0.1:8080')
-# server.shutdown()
-# server.server_close()
-# print('   | oracle stopped')
-# print('   | total number of calls to the oracle: {}'.format(result['total_oracle_calls']))
-# print('   | step 1: detected block byte size is {}, in {} oracle calls'.format(
-#     result['step1']['block_byte_size'], result['step1']['nb_oracle_calls']
-# ))
-# print('   | step 2: verified oracle is chaining with ECB, in {} oracle calls'.format(result['step2']['nb_oracle_calls']))
+print(' | Chall 13 (implement Chosen Plaintext Attack (CPA) to forge a valid encrypted admin profile, where encryption uses ECB chaining mode')
+oracle = OracleServer('127.0.0.1', 8080, 'aes_ecb_profile', 16)
+server = oracle.get_server()
+thread = threading.Thread(target=server.serve_forever)
+thread.daemon = True
+thread.start()
+print('   | oracle running at http://127.0.0.1:8080')
+result = cpa_forge_admin_profile.abuse_ecb('http://127.0.0.1:8080')
+server.shutdown()
+server.server_close()
+print('   | oracle stopped')
+print('   | total number of calls to the oracle: {}'.format(result['total_oracle_calls']))
+print('   | step 1: detected block byte size is {}, in {} oracle calls'.format(
+    result['step1']['block_byte_size'], result['step1']['nb_oracle_calls']
+))
+print('   | step 2: verified oracle is chaining with ECB, in {} oracle calls'.format(result['step2']['nb_oracle_calls']))
+print('   | step 3: forged an "admin" profile (oracle only creates "user" ones) in {} calls to the oracle'.format(result['step3']['nb_oracle_calls']))
+print('     | sample: with email "{}", we get the profile 0x{}, which decrypt to "{}"'.format(
+    result['step3']['sample']['email'], result['step3']['sample']['encrypted'], result['step3']['sample']['profile']
+))
+print('     | by choosing email "{}", we push "user" in a new block'.format(result['step3']['pushed_user_out']['email']))
+print('       | got encrypted profile: 0x{}'.format(result['step3']['pushed_user_out']['encrypted']))
+print('       | keeping:               0x{}'.format(result['step3']['pushed_user_out']['keeping']))
+print('     | by choosing email {}, we get encryption of "admin" in a whole block'.format(result['step3']['admin_encryption']['email']))
+print('       | got encrypted profile: 0x{}'.format(result['step3']['admin_encryption']['encrypted']))
+print('       | keeping:               0x{}'.format(result['step3']['admin_encryption']['keeping']))
+print('     | forged encrypted profile 0x{} decrypts to "{}"'.format(
+    result['step3']['forged']['encrypted'], result['step3']['forged']['profile']
+))

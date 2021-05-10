@@ -1,11 +1,16 @@
 from http.server import BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, parse_qsl
 from utils import encoder
 
 
 class BaseHandler(BaseHTTPRequestHandler):
     def _parse_query_string(self):
-        return parse_qs(urlparse(self.path).query)
+        return parse_qs(urlparse(self.path).query, encoding='utf-8')
+
+    def _parse_body(self):
+        content_length = int(self.headers.get('content-length'))
+        data = self.rfile.read(content_length)
+        return parse_qs(data, encoding='utf-8')
 
     def _convert_or_raise_input(self, data: str):
         try:
