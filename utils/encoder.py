@@ -25,27 +25,27 @@ def hex_to_bytes(data: str):
     return bytes.fromhex(data)
 
 
-def bytes_to_ascii(data: bytes):
+def bytes_to_utf8(data: bytes):
     return data.decode('utf-8')
 
 
-def ascii_to_bytes(data: str):
+def utf8_to_bytes(data: str):
     return data.encode('utf-8')
 
 
-def ascii_to_b64(data: str):
+def utf8_to_b64(data: str):
     return base64.b64encode(data.encode('utf-8')).decode('utf-8')
 
 
-def b64_to_ascii(data: str):
+def b64_to_utf8(data: str):
     return base64.b64decode(data).decode('utf-8')
 
 
-def ascii_to_hex(data: str):
+def utf8_to_hex(data: str):
     return data.encode('utf-8').hex()
 
 
-def hex_to_ascii(data: str):
+def hex_to_utf8(data: str):
     return bytes.fromhex(data).decode('utf-8')
 
 

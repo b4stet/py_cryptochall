@@ -3,6 +3,9 @@ import requests
 from attack import query_oracle
 
 
+# requirements for success:
+# - oracle accept plaintext hex encoded, in a 'data' parameter
+# - oracle return cipher hex encoded
 def guess_ecb_cbc(nb_repeating_blocks, nb_runs, url):
     result = {
         'total_oracle_calls': 0,

@@ -4,9 +4,9 @@ from crypter import aes
 from utils import encoder, randomness
 
 
-def MakeAESwithECBorCBCHandler(key_byte_length: int):
+def create_handler_aes_ecb_cbc(key_byte_length: int):
     class AESwithECBorCBCHandler(BaseHandler):
-        __KEY_LENGTH = key_byte_length[0]
+        __KEY_LENGTH = key_byte_length
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -36,9 +36,10 @@ def MakeAESwithECBorCBCHandler(key_byte_length: int):
             cipher_hex = encoder.bytes_to_hex(cipher_bytes)
 
             # send response
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-            self.wfile.write(bytes(cipher_hex, "utf-8"))
+            self._send_response(cipher_hex)
+            # self.send_response(200)
+            # self.send_header("Content-type", "text/html")
+            # self.end_headers()
+            # self.wfile.write(bytes(cipher_hex, "utf-8"))
 
     return AESwithECBorCBCHandler

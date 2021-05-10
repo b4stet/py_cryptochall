@@ -4,13 +4,13 @@ from crypter import aes
 from utils import encoder, randomness
 
 
-def MakeAESwithECBHandler(key_byte_length: int):
+def create_handler_aes_ecb(key_byte_length: int):
     secret_b64 = 'Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGll'
     secret_b64 += 'cyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK'
     before = b'X' * randomness.get_int(0, 24)
 
     class AESwithECBHandler(BaseHandler):
-        __KEY = randomness.get_bytes(key_byte_length[0])
+        __KEY = randomness.get_bytes(key_byte_length)
         __SECRET = encoder.b64_to_bytes(secret_b64)
 
         def __init__(self, *args, **kwargs):
@@ -32,9 +32,10 @@ def MakeAESwithECBHandler(key_byte_length: int):
             cipher_hex = encoder.bytes_to_hex(cipher_bytes)
 
             # send response
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-            self.wfile.write(bytes(cipher_hex, "utf-8"))
+            self._send_response(cipher_hex)
+            # self.send_response(200)
+            # self.send_header("Content-type", "text/html")
+            # self.end_headers()
+            # self.wfile.write(bytes(cipher_hex, "utf-8"))
 
     return AESwithECBHandler

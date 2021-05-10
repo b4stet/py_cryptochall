@@ -32,7 +32,7 @@ print(' | Chall 3 (single byte xor cipher, frequency attack) ...', end='')
 cipher_hex = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
 cipher_bytes = encoder.hex_to_bytes(cipher_hex)
 best_key, best_plain, _ = xor_frequency.attack_single_byte(cipher_bytes, 'english')
-print(' ok: found key=0x{}, plain={}'.format(encoder.bytes_to_hex(best_key), encoder.bytes_to_ascii(best_plain)))
+print(' ok: found key=0x{}, plain={}'.format(encoder.bytes_to_hex(best_key), encoder.bytes_to_utf8(best_plain)))
 
 # Chall4
 print(' | Chall 4 (detect single xor cipher, frequency attack) ...', end='')
@@ -58,16 +58,16 @@ print(' ok: found xor cipher at index={}'.format(plains[0]['index']))
 print('   | where cipher={}, frequency attack gave key={}, plain={}, score={}'.format(
     encoder.bytes_to_hex(plains[0]['cipher']),
     encoder.bytes_to_hex(plains[0]['key']),
-    encoder.bytes_to_ascii(plains[0]['plain']).strip('\n'),
+    encoder.bytes_to_utf8(plains[0]['plain']).strip('\n'),
     plains[0]['score']
 ))
 
 # Chall5
 print(' | Chall 5 (implement repeating key xor cipher) ...', end='')
-plain_ascii = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"
-plain_bytes = encoder.ascii_to_bytes(plain_ascii)
-key_ascii = 'ICE'
-key_bytes = encoder.ascii_to_bytes(key_ascii)
+plain_utf8 = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"
+plain_bytes = encoder.utf8_to_bytes(plain_utf8)
+key_utf8 = 'ICE'
+key_bytes = encoder.utf8_to_bytes(key_utf8)
 cipher_bytes = xor.encrypt(plain_bytes, key_bytes)
 cipher_hex_observed = encoder.bytes_to_hex(cipher_bytes)
 cipher_hex_expected = '0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a2622632427276527'
@@ -86,10 +86,10 @@ cipher_bytes = encoder.b64_to_bytes(cipher_b64)
 repeating_xor_key_expected = 'Terminator X: Bring the noise'
 
 print('   | 6.1 (compute hamming distance) ...', end='')
-hamming1_ascii = 'this is a test'
-hamming2_ascii = 'wokka wokka!!!'
-hamming1_bytes = encoder.ascii_to_bytes(hamming1_ascii)
-hamming2_bytes = encoder.ascii_to_bytes(hamming2_ascii)
+hamming1_utf8 = 'this is a test'
+hamming2_utf8 = 'wokka wokka!!!'
+hamming1_bytes = encoder.utf8_to_bytes(hamming1_utf8)
+hamming2_bytes = encoder.utf8_to_bytes(hamming2_utf8)
 distance_observed = frequency.hamming_distance(hamming1_bytes, hamming2_bytes)
 distance_expected = 37
 assert distance_observed == distance_expected, 'Failed 6.1: Exptected {}, got {}'.format(distance_expected, distance_observed)
@@ -101,9 +101,9 @@ print(' ok: best key length found is {}, with a minimal hamming distance of {}'.
 
 print('   | 6.3 (split into block of key length bytes, transpose then apply single byte xor frequency attack) ...', end='')
 best_key_bytes = xor_frequency.attack_repeating_key(cipher=cipher_bytes, key_length=best_key_length, lang='english')
-best_key_ascii = encoder.bytes_to_ascii(best_key_bytes)
-assert best_key_ascii == repeating_xor_key_expected, 'Failed 6.3: Exptected {}, got {}'.format(repeating_xor_key_expected, best_key_ascii)
-print(' ok: found best repeating key is "{}"'.format(best_key_ascii))
+best_key_utf8 = encoder.bytes_to_utf8(best_key_bytes)
+assert best_key_utf8 == repeating_xor_key_expected, 'Failed 6.3: Exptected {}, got {}'.format(repeating_xor_key_expected, best_key_utf8)
+print(' ok: found best repeating key is "{}"'.format(best_key_utf8))
 
 # Chall 7
 print(' | Chall 7 (AES-ECB decryption) ...', end='')
@@ -112,13 +112,13 @@ with open('./data/set1_chall7.txt', mode='r') as f:
     lines = f.read().splitlines()
     cipher_b64 = ''.join(lines)
 cipher_bytes = encoder.b64_to_bytes(cipher_b64)
-key_ascii = 'YELLOW SUBMARINE'
+key_utf8 = 'YELLOW SUBMARINE'
 plain_expected_beginning = 'I\'m back and I\'m ringin\' the bell'
-key_bytes = encoder.ascii_to_bytes(key_ascii)
+key_bytes = encoder.utf8_to_bytes(key_utf8)
 plain_bytes = aes.decrypt(cipher_bytes, key_bytes, 'ecb')
-plain_ascii = encoder.bytes_to_ascii(plain_bytes)
-assert plain_ascii.startswith("I'm back and I'm ringin' the bell") is True, 'Failed 7: Expected plain starting with "{}", got {}'.format(
-    plain_expected_beginning, plain_ascii[:50]
+plain_utf8 = encoder.bytes_to_utf8(plain_bytes)
+assert plain_utf8.startswith("I'm back and I'm ringin' the bell") is True, 'Failed 7: Expected plain starting with "{}", got {}'.format(
+    plain_expected_beginning, plain_utf8[:50]
 )
 print(' ok')
 

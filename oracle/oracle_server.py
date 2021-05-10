@@ -1,18 +1,21 @@
 from http.server import HTTPServer
-from oracle.encrypt_mode import MakeAESwithECBorCBCHandler
-from oracle.encrypt_secret import MakeAESwithECBHandler
+from oracle import encrypt_mode, encrypt_secret, encrypt_profile
 
 
 class OracleServer():
     __HANDLERS = {
         'aes_ecb_cbc': {
-            'handler': MakeAESwithECBorCBCHandler,
+            'handler': encrypt_mode.create_handler_aes_ecb_cbc,
             'nb_args': 1,
         },
-        'aes_ecb': {
-            'handler': MakeAESwithECBHandler,
+        'aes_ecb_secret': {
+            'handler': encrypt_secret.create_handler_aes_ecb,
             'nb_args': 1,
         },
+        'aes_ecb_profile': {
+            'handler': encrypt_profile.create_handler_aes_ecb,
+            'nb_args': 1,
+        }
     }
 
     def __init__(self, hostname, port, handler_name, *args):
@@ -31,7 +34,7 @@ class OracleServer():
 
         handler = None
         if handler_config['nb_args'] > 0:
-            handler = handler_config['handler'](self.__args)
+            handler = handler_config['handler'](*self.__args)
         else:
             handler = handler_config['handler']
 

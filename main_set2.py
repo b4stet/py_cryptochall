@@ -3,7 +3,7 @@ import threading
 from datetime import datetime
 from utils import encoder, bitwise, padding
 from crypter import aes
-from attack import cpa_guess_mode, cpa_retrieve_secret
+from attack import cpa_guess_mode, cpa_retrieve_secret, cpa_forge_admin_profile
 from oracle.oracle_server import OracleServer
 
 # Set 2
@@ -11,9 +11,9 @@ print('[+] Set 2')
 
 # Chall 9
 print(' | Chall 9 (implement pkcs7 padding) ...', end='')
-data_ascii = 'YELLOW SUBMARINE'
+data_utf8 = 'YELLOW SUBMARINE'
 padded_expected = b'YELLOW SUBMARINE\x04\x04\x04\x04'
-data_bytes = encoder.ascii_to_bytes(data_ascii)
+data_bytes = encoder.utf8_to_bytes(data_utf8)
 padded_bytes = padding.pad_pkcs7(data_bytes, 20)
 assert padded_bytes == padded_expected, 'Failed 9: Expected {}, got {}'.format(padded_expected, padded_bytes)
 print(' ok')
@@ -26,8 +26,8 @@ with open('./data/set2_chall10.txt', mode='r') as f:
     cipher_b64 = ''.join(lines)
 cipher_bytes = encoder.b64_to_bytes(cipher_b64)
 iv = bytes([0])*16
-key_ascii = 'YELLOW SUBMARINE'
-key_bytes = encoder.ascii_to_bytes(key_ascii)
+key_utf8 = 'YELLOW SUBMARINE'
+key_bytes = encoder.utf8_to_bytes(key_utf8)
 plain_bytes = aes.decrypt_cbc_homemade(cipher_bytes, key_bytes, iv)
 encrypted_bytes = aes.encrypt_cbc_homemade(plain_bytes, key_bytes, iv)
 assert encrypted_bytes == cipher_bytes, 'Expected encryption starting by {}, got {}'.format(cipher_bytes[:10], encrypted_bytes[:10])
@@ -61,8 +61,9 @@ for attempt in result['step3']['attempts']:
     print('     |  => chained with {}'.format(attempt['guessed']))
 
 # Chall 12
-print(' | Chall 12 (implement Chosen Plaintext Attack (CPA) to retrieve secret from encryption with ECB chaining mode')
-oracle = OracleServer('127.0.0.1', 8080, 'aes_ecb', 16)
+print(' | Chall 12 (implement Chosen Plaintext Attack (CPA) to retrieve secret from encryption with ECB chaining mode)')
+key_byte_size = 16
+oracle = OracleServer('127.0.0.1', 8080, 'aes_ecb_secret', key_byte_size)
 server = oracle.get_server()
 thread = threading.Thread(target=server.serve_forever)
 thread.daemon = True
@@ -72,7 +73,8 @@ result = cpa_retrieve_secret.attack_ecb('http://127.0.0.1:8080')
 server.shutdown()
 server.server_close()
 print('   | oracle stopped')
-print('   | total number of calls to the oracle: {}'.format(result['total_oracle_calls']))
+print('   | total number of calls to the oracle to decrypt secret without knowing the key: {}'.format(result['total_oracle_calls']))
+print('   | bruteforcing AES {}-bit key would take 1 call to the oracle then at most {:,} offline tests'.format(key_byte_size*8, 256**key_byte_size))
 print('   | step 1: detected block byte size is {}, in {} oracle calls'.format(
     result['step1']['block_byte_size'], result['step1']['nb_oracle_calls']
 ))
@@ -83,14 +85,36 @@ print('     | prefix to use for chosen plaintexts is 0x{} ({} bytes)'.format(
 ))
 print('     | first controlled block is at index {}'.format(result['step3']['first_controlled_block_index']))
 print('   | step 4: attack performed in {} calls to the oracle'.format(result['step4']['nb_oracle_calls']))
-print('     |  witnesses (secret encrypted at different starting offset in a block) collected in {} calls to the oracle'.format(
+print('     | witnesses (secret encrypted starting from all possible offsets in a block) collected in {} calls to the oracle'.format(
     result['step4']['witnesses']['nb_oracle_calls']
 ))
+print('     | secret length is {} bytes, obtained in {} calls to the oracle'.format(
+    result['step4']['secret']['length'], result['step4']['secret']['nb_oracle_calls']
+))
+print('     | secret is: {}'.format(result['step4']['secret']['value']))
+print('     | details of the bruteforce: [a, b, c, d] where')
+print('     | a: offset of secret under bruteforce')
+print('     | b: block index used to compare result with witness')
+print('     | c: number of calls to the oracle before getting a match with the witness')
+print('     | d: witness block to match')
 for byte_offset, attempt in enumerate(result['step4']['bruteforce']):
-    print('     |- for the offset {} byte of the secret, compared witness and bruteforce result on block index {}'.format(
-        byte_offset, attempt['block_index']
-    ))
-    print('     |  received encryption matched the witness block after {} calls to the oracle'.format(attempt['nb_oracle_calls']))
-    print('     |  witness block:      0x{}'.format(attempt['witness']))
-    print('     |  when sending {}'.format(encoder.hex_to_bytes(attempt['sent'])))
-print('     | secret was: {}'.format(result['step4']['secret']))
+    print('       |- [{:3}, {:2}, {:3} calls, 0x{}]'.format(byte_offset, attempt['block_index'], attempt['nb_oracle_calls'], attempt['witness']))
+    print('       |  chosen plaintext {}'.format(encoder.hex_to_bytes(attempt['sent'])))
+
+# Chall 13
+# print(' | Chall 13 (implement Chosen Plaintext Attack (CPA) to forge a valid encrypted admin profile, where encryption uses ECB chaining mode')
+# oracle = OracleServer('127.0.0.1', 8080, 'aes_ecb_profile', 16)
+# server = oracle.get_server()
+# thread = threading.Thread(target=server.serve_forever)
+# thread.daemon = True
+# thread.start()
+# print('   | oracle running at http://127.0.0.1:8080')
+# result = cpa_forge_admin_profile.abuse_ecb('http://127.0.0.1:8080')
+# server.shutdown()
+# server.server_close()
+# print('   | oracle stopped')
+# print('   | total number of calls to the oracle: {}'.format(result['total_oracle_calls']))
+# print('   | step 1: detected block byte size is {}, in {} oracle calls'.format(
+#     result['step1']['block_byte_size'], result['step1']['nb_oracle_calls']
+# ))
+# print('   | step 2: verified oracle is chaining with ECB, in {} oracle calls'.format(result['step2']['nb_oracle_calls']))

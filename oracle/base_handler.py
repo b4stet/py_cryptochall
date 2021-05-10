@@ -15,5 +15,11 @@ class BaseHandler(BaseHTTPRequestHandler):
 
         return data_bytes
 
+    def _send_response(self, message):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        self.wfile.write(bytes(message, "utf-8"))
+
     def log_request(self, code='-', size='-'):
         return
