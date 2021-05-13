@@ -33,6 +33,9 @@ def create_handler_aes_ecb_cbc(key_byte_length: int):
             else:
                 cipher_bytes = aes.encrypt(user_bytes, key, 'cbc', iv)
 
+                # remove iv
+                cipher_bytes = cipher_bytes[16:]
+
             cipher_hex = encoder.bytes_to_hex(cipher_bytes)
 
             # send response

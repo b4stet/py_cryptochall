@@ -1,6 +1,4 @@
 from oracle.base_handler import BaseHandler
-# from urllib.parse import urlparse, parse_qs
-import cgi
 from crypter import aes
 from utils import encoder, randomness
 import json

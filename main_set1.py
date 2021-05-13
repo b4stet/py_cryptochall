@@ -5,10 +5,8 @@ from crypter import xor, aes
 from attack import xor_frequency
 from datetime import datetime
 
-# Set 1
-print('[+] Set 1')
 # Chall1
-print(' | Chall 1 (convert hex to b64) ...', end='')
+print('[+] Chall 1 (convert hex to b64) ...', end='')
 str_hex = '49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d'
 str_b64_expected = 'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'
 str_b64_observed = encoder.hex_to_b64(str_hex)
@@ -16,7 +14,7 @@ assert str_b64_observed == str_b64_expected, 'Failed 1: Expected {}, got {}'.for
 print(' ok')
 
 # Chall2
-print(' | Chall 2 (xor operation) ...', end='')
+print('\n[+] Chall 2 (xor operation) ...', end='')
 a_hex = '1c0111001f010100061a024b53535009181c'
 b_hex = '686974207468652062756c6c277320657965'
 a_bytes = encoder.hex_to_bytes(a_hex)
@@ -28,14 +26,14 @@ assert xor_hex_observed == xor_hex_expected, 'Failed 2: Expected {}, got {}'.for
 print(' ok')
 
 # Chall3
-print(' | Chall 3 (single byte xor cipher, frequency attack) ...', end='')
+print('\n[+] Chall 3 (single byte xor cipher, frequency attack) ...', end='')
 cipher_hex = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
 cipher_bytes = encoder.hex_to_bytes(cipher_hex)
 best_key, best_plain, _ = xor_frequency.attack_single_byte(cipher_bytes, 'english')
 print(' ok: found key=0x{}, plain={}'.format(encoder.bytes_to_hex(best_key), encoder.bytes_to_utf8(best_plain)))
 
 # Chall4
-print(' | Chall 4 (detect single xor cipher, frequency attack) ...', end='')
+print('\n[+] Chall 4 (detect single xor cipher, frequency attack) ...', end='')
 plains = []
 with open('./data/set1_chall4.txt', mode='r') as f:
     line = f.readline()
@@ -55,7 +53,7 @@ with open('./data/set1_chall4.txt', mode='r') as f:
         line = f.readline()
 plains.sort(key=lambda elt: elt['score'], reverse=True)
 print(' ok: found xor cipher at index={}'.format(plains[0]['index']))
-print('   | where cipher={}, frequency attack gave key={}, plain={}, score={}'.format(
+print(' | where cipher={}, frequency attack gave key={}, plain=0x{}, score={}'.format(
     encoder.bytes_to_hex(plains[0]['cipher']),
     encoder.bytes_to_hex(plains[0]['key']),
     encoder.bytes_to_utf8(plains[0]['plain']).strip('\n'),
@@ -63,7 +61,7 @@ print('   | where cipher={}, frequency attack gave key={}, plain={}, score={}'.f
 ))
 
 # Chall5
-print(' | Chall 5 (implement repeating key xor cipher) ...', end='')
+print('\n[+] Chall 5 (implement repeating key xor cipher) ...', end='')
 plain_utf8 = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"
 plain_bytes = encoder.utf8_to_bytes(plain_utf8)
 key_utf8 = 'ICE'
@@ -76,7 +74,7 @@ assert cipher_hex_observed == cipher_hex_expected, 'Failed 5: Expected {}, got {
 print(' ok')
 
 # Chall6
-print(' | Chall 6 (break repeating key xor)')
+print('\n[+] Chall 6 (break repeating key xor)')
 cipher_b64 = ''
 with open('./data/set1_chall6.txt', mode='r') as f:
     lines = f.readlines()
@@ -85,7 +83,7 @@ with open('./data/set1_chall6.txt', mode='r') as f:
 cipher_bytes = encoder.b64_to_bytes(cipher_b64)
 repeating_xor_key_expected = 'Terminator X: Bring the noise'
 
-print('   | 6.1 (compute hamming distance) ...', end='')
+print(' | 6.1 (compute hamming distance) ...', end='')
 hamming1_utf8 = 'this is a test'
 hamming2_utf8 = 'wokka wokka!!!'
 hamming1_bytes = encoder.utf8_to_bytes(hamming1_utf8)
@@ -95,18 +93,18 @@ distance_expected = 37
 assert distance_observed == distance_expected, 'Failed 6.1: Exptected {}, got {}'.format(distance_expected, distance_observed)
 print(' ok')
 
-print('   | 6.2 (guess key length) ...', end='')
+print(' | 6.2 (guess key length) ...', end='')
 best_key_length, best_distance = frequency.get_key_length(data=cipher_bytes, key_length_min=2, key_length_max=40, nb_block=20)
 print(' ok: best key length found is {}, with a minimal hamming distance of {}'.format(best_key_length, best_distance))
 
-print('   | 6.3 (split into block of key length bytes, transpose then apply single byte xor frequency attack) ...', end='')
+print(' | 6.3 (split into block of key length bytes, transpose then apply single byte xor frequency attack) ...', end='')
 best_key_bytes = xor_frequency.attack_repeating_key(cipher=cipher_bytes, key_length=best_key_length, lang='english')
 best_key_utf8 = encoder.bytes_to_utf8(best_key_bytes)
 assert best_key_utf8 == repeating_xor_key_expected, 'Failed 6.3: Exptected {}, got {}'.format(repeating_xor_key_expected, best_key_utf8)
 print(' ok: found best repeating key is "{}"'.format(best_key_utf8))
 
 # Chall 7
-print(' | Chall 7 (AES-ECB decryption) ...', end='')
+print('\n[+] Chall 7 (AES-ECB decryption) ...', end='')
 cipher_b64 = ''
 with open('./data/set1_chall7.txt', mode='r') as f:
     lines = f.read().splitlines()
@@ -123,7 +121,7 @@ assert plain_utf8.startswith("I'm back and I'm ringin' the bell") is True, 'Fail
 print(' ok')
 
 # Chall 8
-print(' | Chall 8 (detect AES-ECB encryption) ...', end='')
+print('\n[+] Chall 8 (detect AES-ECB encryption) ...', end='')
 ciphers_hex = []
 with open('./data/set1_chall8.txt', mode='r') as f:
     ciphers_hex = f.read().splitlines()

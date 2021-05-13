@@ -16,6 +16,13 @@ def get_response(url, data: bytes, verb='GET'):
     if verb == 'POST':
         response = requests.post(url, data={'data': data_hex})
     response.encoding = 'utf-8'
+
+    result = b''
+    if response.status_code == '200':
+        result = encoder.hex_to_bytes(response.text)
+    else:
+        result = encoder.utf8_to_bytes(response.reason)
+
     return encoder.hex_to_bytes(response.text)
 
 

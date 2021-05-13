@@ -1,5 +1,6 @@
 from http.server import HTTPServer
-from oracle import encrypt_mode, encrypt_secret, encrypt_profile
+from oracle import encrypt_mode, encrypt_secret
+from oracle import encrypt_decrypt_profile, encrypt_decrypt_comments
 
 
 class OracleServer():
@@ -13,9 +14,13 @@ class OracleServer():
             'nb_args': 1,
         },
         'aes_ecb_profile': {
-            'handler': encrypt_profile.create_handler_aes_ecb,
+            'handler': encrypt_decrypt_profile.create_handler_aes_ecb,
             'nb_args': 1,
-        }
+        },
+        'aes_cbc_comment': {
+            'handler': encrypt_decrypt_comments.create_handler_aes_cbc,
+            'nb_args': 1,
+        },
     }
 
     def __init__(self, hostname, port, handler_name, *args):

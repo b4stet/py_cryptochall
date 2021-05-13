@@ -18,7 +18,11 @@ def encrypt(plain: bytes, key: bytes, chaining_mode: str, iv=None, pad=True):
 
     if pad is True:
         plain = padding.pad_pkcs7(plain, 16)
-    return crypter.encrypt(plain)
+
+    cipher = crypter.encrypt(plain)
+    if iv is not None:
+        cipher = iv + cipher
+    return cipher
 
 
 def decrypt(cipher: bytes, key: bytes, chaining_mode: str, iv=None, unpad=True):
@@ -43,7 +47,7 @@ def encrypt_cbc_homemade(plain: bytes, key: bytes, iv: bytes):
     plain_padded = padding.pad_pkcs7(plain, 16)
     blocks_plain = [plain_padded[i:i+16] for i in range(0, len(plain_padded), 16)]
 
-    cipher = b''
+    cipher = iv
     prev = iv
     for block_plain in blocks_plain:
         xored = bitwise.xor(prev, block_plain)
