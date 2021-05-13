@@ -5,6 +5,7 @@ import requests
 
 # requirement for success:
 # - secret is appended to attacker controlled plaintext
+# - oracle chains with ECB
 # - oracle pads with a method (eg. pcks7) that adds a full block of padding if plain is a multiple of block size
 # - oracle accept plaintext hex encoded, in a 'data' parameter
 # - oracle return cipher hex encoded

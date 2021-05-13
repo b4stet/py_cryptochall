@@ -3,7 +3,7 @@ import threading
 from datetime import datetime
 from utils import encoder, bitwise, padding
 from crypter import aes
-from attack import cpa_guess_mode, cpa_retrieve_secret, cpa_forge_admin_profile
+from attack import cpa_guess_mode, cpa_retrieve_secret, cca1_forge_data
 from oracle.oracle_server import OracleServer
 
 # Set 2
@@ -61,7 +61,7 @@ for attempt in result['step3']['attempts']:
     print('     |  => chained with {}'.format(attempt['guessed']))
 
 # Chall 12 & 14
-print(' | Chall 12 and 14 (implement Chosen Plaintext Attack (CPA) to retrieve secret from encryption with ECB chaining mode)')
+print(' | Chall 12 and 14 (Chosen Plaintext Attack (CPA) to retrieve secret from encryption with ECB chaining mode)')
 key_byte_size = 16
 oracle = OracleServer('127.0.0.1', 8080, 'aes_ecb_secret', key_byte_size)
 server = oracle.get_server()
@@ -102,14 +102,14 @@ for byte_offset, attempt in enumerate(result['step4']['bruteforce']):
     print('       |  chosen plaintext {}'.format(encoder.hex_to_bytes(attempt['sent'])))
 
 # Chall 13
-print(' | Chall 13 (implement Chosen Plaintext Attack (CPA) to forge a valid encrypted admin profile, where encryption uses ECB chaining mode')
+print(' | Chall 13 (Non Adaptative Chosen Ciphertext Attack (CCA1) to forge a valid encrypted admin profile, where encryption uses ECB chaining mode')
 oracle = OracleServer('127.0.0.1', 8080, 'aes_ecb_profile', 16)
 server = oracle.get_server()
 thread = threading.Thread(target=server.serve_forever)
 thread.daemon = True
 thread.start()
 print('   | oracle running at http://127.0.0.1:8080')
-result = cpa_forge_admin_profile.abuse_ecb('http://127.0.0.1:8080')
+result = cca1_forge_data.create_admin_profile_ecb('http://127.0.0.1:8080', 'user', 'admin')
 server.shutdown()
 server.server_close()
 print('   | oracle stopped')
@@ -119,7 +119,7 @@ print('   | step 1: detected block byte size is {}, in {} oracle calls'.format(
 ))
 print('   | step 2: verified oracle is chaining with ECB, in {} oracle calls'.format(result['step2']['nb_oracle_calls']))
 print('   | step 3: forged an "admin" profile (oracle only creates "user" ones) in {} calls to the oracle'.format(result['step3']['nb_oracle_calls']))
-print('     | sample: with email "{}", we get the profile 0x{}, which decrypt to "{}"'.format(
+print('     | sample: with email "{}", we get the profile 0x{}, which decrypts to "{}"'.format(
     result['step3']['sample']['email'], result['step3']['sample']['encrypted'], result['step3']['sample']['profile']
 ))
 print('     | by choosing email "{}", we push "user" in a new block'.format(result['step3']['pushed_user_out']['email']))
@@ -133,7 +133,7 @@ print('     | forged encrypted profile 0x{} decrypts to "{}"'.format(
 ))
 
 # Chall 15
-print(' | Chall 14 (validate pkcs7 padding) ...', end='')
+print(' | Chall 15 (validate pkcs7 padding) ...', end='')
 padding_ok = b'ICE ICE BABY\x04\x04\x04\x04'
 padding_ko2 = b'ICE ICE BABY\x01\x02\x03\x04'
 padding_ko1 = b'ICE ICE BABY\x05\x05\x05\x05'
@@ -148,3 +148,6 @@ for test, expected in zip(padding_tests, padding_expectations):
         else:
             raise
 print(' ok')
+
+# Chall 16
+print(' | Chall 16 ()')

@@ -4,13 +4,14 @@ import requests
 
 
 # requirements for success:
+# - oracle chains with ECB
 # - oracle pads with pkcs7
 # - profile is encoded in a fixed order, ending by the role
 # - the uid is fixed
 # - oracle accept plaintext hex encoded, in a 'data' parameter
 # - oracle return cipher hex encoded
 # note: because of forbidden characters, we cannot launch a CPA attack to decrypt a profile on our own
-def abuse_ecb(url):
+def create_admin_profile_ecb(url, role_user, role_target):
     result = {
         'total_oracle_calls': 0,
         'step1': {},
@@ -40,7 +41,7 @@ def abuse_ecb(url):
     result['step3'] = {
         'nb_oracle_calls': 0,
     }
-    # request an example to know the structure
+    # request a decryption example to know the structure
     email_bytes = b'email@example.com'
     profile_encrypted = query_oracle.get_response(url, email_bytes)
     profile_bytes = query_oracle.get_response(url, profile_encrypted, 'POST')
@@ -51,12 +52,12 @@ def abuse_ecb(url):
         'encrypted': encoder.bytes_to_hex(profile_encrypted),
     }
 
-    # choose an email so that 'user' get encrypted in a new block
+    # choose an email so that low_privileged role (eg. 'user') get encrypted in a new block
     # let profile = before_email|email|before_role|user
     # block0              |block1              |block2
     # before_email|emaiiii|iiiiiiil|before_role|user
     before_email, after_email = profile_bytes.split(email_bytes, 1)
-    before_role = after_email.split(b'user', 1)[0]
+    before_role = after_email.split(encoder.utf8_to_bytes(role_user), 1)[0]
     email_length = block_byte_size - (len(before_email) + len(before_role)) % block_byte_size
 
     domain = b'@example.com'
@@ -79,7 +80,7 @@ def abuse_ecb(url):
     # block0              |block1              |block2
     # before_email|prefix |admin               |after_email
     prefix = b'a' * (block_byte_size - len(before_email) % block_byte_size)
-    email_bytes = padding.pad_pkcs7(b'admin', block_byte_size)
+    email_bytes = padding.pad_pkcs7(encoder.utf8_to_bytes(role_target), block_byte_size)
     email_bytes = prefix + email_bytes
     profile_encrypted = query_oracle.get_response(url, email_bytes)
     result['step3']['nb_oracle_calls'] += 1
